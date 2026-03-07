@@ -2,74 +2,54 @@
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body {font-family: Arial, Helvetica, sans-serif;}
-
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1;
-                padding-top: 100px;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgb(0,0,0);
-                background-color: rgba(0,0,0,0.4);
-            }
-
-            .modal-content {
-                background-color: #fefefe;
-                margin: auto;
-                padding: 20px;
-                border: 1px solid #888;
-                width: 80%;
-            }
-
-            .close {
-                color: #aaaaaa;
-                float: right;
-                font-size: 28px;
-                font-weight: bold;
-            }
-
-            .close:hover, .close:focus {
-                color: #000;
-                text-decoration: none;
-                cursor: pointer;
-            }
-        </style>
+        <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body>
+    <body class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 min-h-screen">
 
-    <h2>Home Page</h2>
-
-    <button id="myBtn">Login</button>
+    <!-- Main Content -->
+    <div class="flex items-center justify-center min-h-screen py-8 px-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-12">
+            <h2 class="text-center text-gray-500 text-lg italic mb-4">Welcome to...</h2>
+            <h1 class="text-5xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 mb-8">DirAction</h1>
+            
+            <button id="myBtn" class="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg">
+                Login
+            </button>
+        </div>
+    </div>
     
-    <div id="myModal" class="modal">
-    
-        <div class="modal-content">
-            <span id="close1" class="close">&times;</span>
+    <!-- Login Modal -->
+    <div id="myModal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Login</h3>
+                <span id="close1" class="text-gray-400 hover:text-gray-600 text-2xl cursor-pointer font-bold">&times;</span>
+            </div>
 
-            <form action="/login" method="post">
-                <label for="uname">Username:</label><br>
-                <input type="text" id="uname" name="uname" value="JohnDoe"><br>
-                <label for="pword">Password:</label><br>
-                <input type="text" id="pword" name="pword" value="Password123!"><br><br>
-                <input type="submit" value="Submit">
+            <form action="/login" method="post" class="space-y-4">
+                <div>
+                    <label for="uname" class="block text-sm font-medium text-gray-700 mb-2">Username:</label>
+                    <input type="text" id="uname" name="uname" value="JohnDoe" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="pword" class="block text-sm font-medium text-gray-700 mb-2">Password:</label>
+                    <input type="password" id="pword" name="pword" value="Password123!" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent">
+                </div>
+                <input type="submit" value="Submit" class="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all cursor-pointer shadow-lg mt-6">
             </form> 
         </div>
-
     </div>
 
     {% if facts[0] or facts[1] or facts[2] %}
-    <div id="myBadModal" class="modal">
-    
-        <div class="modal-content">
-            <span id="close2" class="close">&times;</span>
+    <!-- Notification Modal -->
+    <div id="myBadModal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Notification</h3>
+                <span id="close2" class="text-gray-400 hover:text-gray-600 text-2xl cursor-pointer font-bold">&times;</span>
+            </div>
 
-            <p>
+            <p class="text-gray-700 text-lg">
                 {% if facts[0] %}
                     Login Failed
                 {% elif facts[1] %}
@@ -79,7 +59,6 @@
                 {% endif %}
             </p>
         </div>
-
     </div>
     {% endif %}
 
@@ -93,20 +72,33 @@
         var span2 = document.getElementById("close2");
 
         btn.onclick = function() {
-            modal.style.display = "block";
+            modal.classList.remove("hidden");
         }
 
         span1.onclick = function() {
-            modal.style.display = "none";
+            modal.classList.add("hidden");
         }
 
-        span2.onclick = function() {
-            bodal.style.display = "none";
+        if (span2) {
+            span2.onclick = function() {
+                bodal.classList.add("hidden");
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            bodal.style.display = "block";
+            if (bodal) {
+                bodal.classList.remove("hidden");
+            }
         });
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.classList.add("hidden");
+            }
+            if (event.target == bodal) {
+                bodal.classList.add("hidden");
+            }
+        }
     </script>
 
     </body>
