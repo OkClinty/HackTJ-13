@@ -1,99 +1,121 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta charset="utf-8" />
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script src="{{ url_for('static', filename='js/vendor/modernizr.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/vendor/jquery.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/vendor/shortcut.js') }}"></script>
-    </head>
-    <body class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 min-h-screen">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='js/vendor/modernizr.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/vendor/jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/vendor/shortcut.js') }}"></script>
+</head>
+<body class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 min-h-screen">
 
-    <!-- Navigation Bar -->
-    <nav class="bg-slate-950 border-b border-slate-700 sticky top-0 z-40 shadow-lg">
-        <div class="flex justify-center">
-            <ul class="flex gap-0 list-none">
-                <li class="border-r border-slate-700"><a href="/home" class="block text-white px-4 py-4 hover:bg-slate-800 transition-colors">Home</a></li>
-                <li class="border-r border-slate-700"><a href="/create" class="block text-white px-8 py-4 bg-purple-600 hover:bg-purple-700 transition-colors font-semibold">Create</a></li>
-                <li class="border-r border-slate-700"><a href="/simulate" class="block text-white px-8 py-4 hover:bg-slate-800 transition-colors">Simulate</a></li>
-                <li class="border-r border-slate-700"><a href="/about" class="block text-white px-8 py-4 hover:bg-slate-800 transition-colors">About</a></li>
-                <li><a id="myBtn" class="block text-white px-8 py-4 hover:bg-slate-800 transition-colors cursor-pointer">Log Out</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="flex items-center justify-center min-h-[calc(100vh-80px)] py-8 px-4">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-12">
-            <div class="row">
-                <div class="large-6 meduim-6 small-6 columns">
-                    <h4 class="subheader">Input</h4>
-                    <form>
-                    <a class="hollow button tiny" id="copy_button">Copy</a>
-                    <div class="row">
-                        <div class="large-12 columns">
-                        <textarea id="data_area" placeholder="Here goes the graph data..." rows="12"></textarea>
-                        <small id="error_message"></small>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="large-12 columns">
-                        <a id="show_button" href="#" class="success hollow button expanded radius">Draw</a>
-                        </div>
-                    </div>
-                    </form>
-                </div>
-                <div class="large-6 medium-6 small-6 columns">
-                    <h4 class="subheader">Output</h4>
-                    <img id="output" alt="Nothing to show"></img>
-                </div>
-            </div>
-            <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-        </div>
+<!-- Navigation Bar -->
+<nav class="bg-slate-950 border-b border-slate-700 sticky top-0 z-40 shadow-lg">
+    <div class="flex justify-center">
+        <ul class="flex gap-0 list-none">
+            <li class="border-r border-slate-700"><a href="/home"
+                                                     class="block text-white px-4 py-4 hover:bg-slate-800 transition-colors">Home</a>
+            </li>
+            <li class="border-r border-slate-700"><a href="/create"
+                                                     class="block text-white px-8 py-4 bg-purple-600 hover:bg-purple-700 transition-colors font-semibold">Create</a>
+            </li>
+            <li class="border-r border-slate-700"><a href="/simulate"
+                                                     class="block text-white px-8 py-4 hover:bg-slate-800 transition-colors">Simulate</a>
+            </li>
+            <li class="border-r border-slate-700"><a href="/about"
+                                                     class="block text-white px-8 py-4 hover:bg-slate-800 transition-colors">About</a>
+            </li>
+            <li><a id="myBtn" class="block text-white px-8 py-4 hover:bg-slate-800 transition-colors cursor-pointer">Log
+                Out</a></li>
+        </ul>
     </div>
+</nav>
 
-    <!-- Logout Modal -->
-    <div id="myModal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800">Confirm Logout</h3>
-                <span id="close1" class="text-gray-400 hover:text-gray-600 text-2xl cursor-pointer font-bold">&times;</span>
-            </div>
-            <p class="text-gray-600 mb-6">Are you sure you want to log out?</p>
-            <div class="flex gap-4">
-                <button id="close1-btn" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">Cancel</button>
-                <form action="/logout" class="flex-1">
-                    <input type="submit" value="Log Out" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium cursor-pointer">
+<!-- Main Content -->
+<div class="flex flex-col md:flex-row items-stretch justify-center min-h-[calc(100vh-80px)] py-20 px-12 gap-12">
+    <!-- Input card: make it a vertical flex container so it can stretch to match the sibling -->
+    <div class="bg-white rounded-3xl shadow-2xl w-full md:flex-1 md:max-w-none p-12 flex flex-col">
+        <div class="row flex-1 flex flex-col">
+            <div class="large-6 meduim-6 small-6 columns flex-1 flex flex-col">
+                <h2 class="text-center text-gray-500 text-lg italic mb-4">Input</h2>
+                <!-- form grows to fill available vertical space; textarea will occupy remaining space -->
+                <form class="flex flex-col flex-1">
+
+                    <div class="row flex-1">
+                        <div class="large-12 columns h-full flex flex-col">
+                            <textarea id="data_area"
+                                      class="peer flex-1 h-full min-h-[100px] w-full resize-none rounded-[7px] border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:border-t-transparent focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                      placeholder="Input the graph in the following format:&#10edge1 edge2&#10edge3 edge4 "
+                                      rows="12"></textarea>
+                            <small id="error_message"></small>
+                        </div>
+                    </div>
+                    <!-- buttons stay in a non-growing footer area so they sit at the bottom -->
+                    <div class="flex items-center gap-4 mt-4">
+                        <button id="show_button" type="button"
+                                class="inline-flex h-10 w-full items-center justify-center px-4 rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-colors font-medium">
+                            Draw
+                        </button>
+                        <button id="copy_button" type="button"
+                                class="inline-flex h-10 items-center justify-center gap-1 px-4 rounded-md border border-purple-600/20 text-purple-600 bg-white hover:bg-purple-50 transition-colors text-sm font-medium">
+                            Copy
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     </div>
 
-    <script>
-        var modal = document.getElementById("myModal");
-        var btn = document.getElementById("myBtn");
-        var span1 = document.getElementById("close1");
-        var closeBtn = document.getElementById("close1-btn");
+    <!-- Output card /-->
+    <div class="bg-white rounded-3xl shadow-2xl w-full md:flex-1 md:max-w-none p-12 flex flex-col">
+        <div class="flex-1 flex flex-col">
+            <h2 class="text-center text-gray-500 text-lg italic mb-4">Output</h2>
+            <img id="output" alt="Nothing to show"></img>
+        </div>
+    </div>
+</div>
 
-        btn.onclick = function() {
-            modal.classList.remove("hidden");
-        }
+<!-- Logout Modal -->
+<div id="myModal" class="hidden fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Confirm Logout</h3>
+            <span id="close1" class="text-gray-400 hover:text-gray-600 text-2xl cursor-pointer font-bold">&times;</span>
+        </div>
+        <p class="text-gray-600 mb-6">Are you sure you want to log out?</p>
+        <div class="flex gap-4">
+            <button id="close1-btn"
+                    class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium">
+                Cancel
+            </button>
+            <form action="/logout" class="flex-1">
+                <input type="submit" value="Log Out"
+                       class="w-full px-4 py-2 text-white rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-colors font-medium cursor-pointer">
+            </form>
+        </div>
+    </div>
+</div>
 
-        span1.onclick = function() {
-            modal.classList.add("hidden");
-        }
+<script>
+    var modal = document.getElementById("myModal");
+    var btn = document.getElementById("myBtn");
+    var span1 = document.getElementById("close1");
+    var closeBtn = document.getElementById("close1-btn");
 
-        closeBtn.onclick = function() {
-            modal.classList.add("hidden");
-        }
+    btn.onclick = function () {
+        modal.classList.remove("hidden");
+    }
 
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.classList.add("hidden");
-            }
-        }
-    </script>
+    span1.onclick = function () {
+        modal.classList.add("hidden");
+    }
 
-    </body>
+    closeBtn.onclick = function () {
+        modal.classList.add("hidden");
+    }
+</script>
+
+</body>
 </html>
