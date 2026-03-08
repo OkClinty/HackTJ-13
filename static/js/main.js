@@ -2,6 +2,10 @@ var get_data_area = function () {
     return $("#data_area");
 }
 
+var get_python_output_area = function () {
+    return $("#python_output");
+}
+
 /* More about syntax: http://www.graphviz.org/doc/info/lang.html */
 var parse = function () {
     var description = get_data_area().val();
@@ -41,9 +45,7 @@ var render_service = "https://draw.khairulin.com/";
 var previous_graph = "";
 
 var chart_url = function (graph) {
-    var result = render_service + "chart?cht=gv&chl=" + graph;
-    /*console.log("url: " + result);*/
-    return result;
+    return render_service + "chart?cht=gv&chl=" + graph;
 }
 
 var clear_error = function () {
@@ -66,13 +68,54 @@ var render_chart = function (graph) {
     }
 }
 
-var show = function () {
+var set_python_output = function (message, isError) {
+    var outputArea = get_python_output_area();
+    outputArea.text(message);
+    if (isError) {
+        outputArea.removeClass("text-slate-700").addClass("text-red-700");
+    } else {
+        outputArea.removeClass("text-red-700").addClass("text-slate-700");
+    }
+}
+
+var execute_python = async function (edgesText) {
+    try {
+        set_python_output("Running Python...", false);
+        var response = await fetch("/api/process-edges", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({edges_text: edgesText})
+        });
+
+        var payload = await response.json();
+        if (!response.ok || !payload.ok) {
+            var message = (payload && payload.error) ? payload.error : "Python processing failed.";
+            set_python_output(message, true);
+            return;
+        }
+
+        set_python_output(JSON.stringify(payload.result, null, 2), false);
+    } catch (error) {
+        set_python_output("Unable to reach the Python endpoint.", true);
+    }
+}
+
+var show = async function () {
     clear_error();
     var graph = parse();
+    var inputText = get_data_area().val();
+
     if (graph)
         render_chart(graph);
-    else
+    else {
         report_error("unable to parse data");
+        set_python_output("Fix the input format, then click Draw again.", true);
+        return;
+    }
+
+    await execute_python(inputText);
 }
 
 var parse_url_query = function () {
@@ -110,7 +153,6 @@ var handle_query = function () {
         var separator = graph_type === "graph" ? "--" : "->";
         var edges = data.split(";");
         var lines = [];
-        var pattern = "[label";
         for (var i in edges) {
             var e = edges[i];
             if (e.length < 1)
@@ -147,7 +189,9 @@ var on_copy_button_click = function () {
 }
 
 $(document).ready(function () {
-    $("#show_button").click(show);
+    $("#show_button").click(function () {
+        show();
+    });
     $("#copy_button").click(on_copy_button_click);
     shortcut.add("Ctrl+Enter", show);
     handle_query();

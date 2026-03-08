@@ -70,9 +70,12 @@
 
     <!-- Output card /-->
     <div class="bg-white rounded-3xl shadow-2xl w-full md:flex-1 md:max-w-none p-12 flex flex-col">
-        <div class="flex-1 flex flex-col">
-            <h2 class="text-center text-gray-500 text-lg italic mb-4">Output</h2>
+        <div class="flex-1 flex flex-col gap-4">
+            <h2 class="text-center text-gray-500 text-lg italic">Output</h2>
             <img id="output" alt="Nothing to show"></img>
+            <h3 class="text-sm font-semibold text-slate-700">Python Output</h3>
+            <pre id="python_output"
+                 class="flex-1 min-h-[180px] overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-slate-700 whitespace-pre-wrap">Click Draw to run server-side Python and display its output.</pre>
         </div>
     </div>
 </div>
