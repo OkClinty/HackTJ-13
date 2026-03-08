@@ -3,6 +3,8 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="https://cdn.tailwindcss.com"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     </head>
     <body class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 min-h-screen">
 
@@ -21,13 +23,22 @@
 
     <!-- Main Content -->
     <div class="flex items-center justify-center min-h-[calc(100vh-80px)] py-8 px-4">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-12">
+        <!-- widened white box: changed max-w-2xl -> max-w-5xl -->
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl p-12">
             <h2 class="text-center text-gray-500 text-lg italic mb-4">Welcome to...</h2>
             <h1 class="text-5xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 mb-8">DirAction</h1>
-            
+
             <div class="space-y-6 text-gray-700">
                 <p class="text-lg leading-relaxed">
-                    Insert the glaze here
+                    <b>Grover's Algorithm</b> is an important algorithm in quantum computing. It works by tuning the amplitudes of the quantum states to increase the probability of measuring the desired output through a process called amplitude amplification, which involves applying a series of quantum gates to the original state, which is an even superposition of the possible outcomes. The algorithm is particularly useful for searching unsorted databases, as it can find the desired item in O(√N) time, which is an exponential speedup compared to the classical time complexity of O(N).
+                </p>
+
+                <p class="text-lg leading-relexed">
+                    <b>The Quantum Approximate Optimization Algorithm (QAOA)</b> is a hybrid algorithm that finds approximate solutions to combinatorial optimization problems. It works by encoding the problem into a quantum circuit and then using a classical optimizer to adjust the parameters of the circuit to minimize the cost function, a Hamiltonian. The algorithm consists of two main steps; first, the quantum circuit is prepared with a set of parameters, and then the cost function is evaluated by measuring the output of the circuit. The classical optimizer then updates the parameters based on the results of the measurements, and this process is repeated until convergence. QAOA is particularly useful for solving <b>NP-hard problems</b>, which are problems that cannot be solved polynomial time.
+                </p>
+
+                <p class="text-lg leading-relaxed">
+                    <b>Grover-QAOA</b> utilizes Grover's algorithm to enahnce the performance of QAOA. By using Grover's algorithm to amplify the probability of measuring the desired output, Grover-QAOA can find better approximate solutions to combinatorial optimization problems than QAOA alone. The algorithm works by first applying a series of quantum gates to prepare the initial state, which is an even superposition of the possible outcomes. Then, Grover's algorithm is applied to amplify the probability of measuring the desired output, and finally, the classical optimizer is used to adjust the parameters of the circuit to minimize the cost function. This combination allows Grover-QAOA to achieve better performance than QAOA alone, making it an even more powerful tool for solving NP-hard problems.
                 </p>
                 <div class="grid grid-cols-3 gap-4 mt-8">
                     <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl text-center">
