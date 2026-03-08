@@ -7,7 +7,12 @@ from tqdm import tqdm
 from classiq import *
 
 LAMBDA = 20
-TASKLAMBDA = 30
+TASKLAMBDA = 15
+
+NUM_LAYERS = 5
+NUM_SHOTS = 1000
+MAX_ITERATIONS = 60
+
 agents = 4
 tasks = 3
 
@@ -82,8 +87,6 @@ def qaoa_ansatz(
         ],
     )
 
-NUM_LAYERS = 3
-
 @qfunc
 def main(
     params: CArray[CReal, NUM_LAYERS * 2],
@@ -98,8 +101,7 @@ def main(
 qprog_gmqaoa = synthesize(main)
 show(qprog_gmqaoa)
 
-NUM_SHOTS = 1000
-MAX_ITERATIONS = 60
+
 
 initial_params = (
     np.concatenate((np.linspace(0, 1, NUM_LAYERS), np.linspace(1, 0, NUM_LAYERS)))
