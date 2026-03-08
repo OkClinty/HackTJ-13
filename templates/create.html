@@ -46,10 +46,10 @@
                             <textarea id="data_area"
                                       aria-label="Graph input edges"
                                       class="peer flex-1 h-full min-h-[100px] w-full resize-none rounded-[7px] border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:border-t-transparent focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                      placeholder="Required format per line:&#10from_node to_node weight&#10A B 2.5&#10B C 7"
+                                      placeholder="Required format per line:&#10from_node to_node weight [budget]&#10A B 2.5&#10B C 7 50"
                                       rows="12"></textarea>
                             <small id="error_message"></small>
-                            <p class="mt-2 text-xs text-slate-500">Each edge must include a numeric weight as the 3rd value.</p>
+                            <p class="mt-2 text-xs text-slate-500">Each edge must include: from, to, weight. Optional 4th column: agent budget.</p>
                         </div>
                     </div>
                     <!-- buttons stay in a non-growing footer area so they sit at the bottom -->

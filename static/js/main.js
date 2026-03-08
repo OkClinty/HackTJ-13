@@ -32,7 +32,7 @@ var parse = function () {
             continue;
         }
         var elems = line.split(/\s+/);
-        if (elems.length !== 3)
+        if (elems.length !== 3 && elems.length !== 4)
             return undefined;
 
         var from = elems[0];
@@ -41,6 +41,13 @@ var parse = function () {
         if (Number.isNaN(weight))
             return undefined;
 
+        if (elems.length === 4) {
+            var budget = Number(elems[3]);
+            if (Number.isNaN(budget))
+                return undefined;
+        }
+
+        // Budget is backend-only; graph edge labels remain the assignment weight.
         var edge = from + sep + to + "[label=\"" + elems[2] + "\"]";
         result.push(edge);
     }
@@ -170,7 +177,7 @@ var show = async function () {
     if (graph)
         render_chart(graph);
     else {
-        report_error("unable to parse data (use: from to weight)");
+        report_error("unable to parse data (use: from to weight [budget])");
         set_python_output_graph("");
         set_python_output("Fix the input format, then click Draw again.", true);
         return;

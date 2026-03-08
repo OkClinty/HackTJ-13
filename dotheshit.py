@@ -284,6 +284,8 @@ def solve_assignment_with_qaoa(
     capacity_penalty=None,
     show_circuit=False,
     plot_trace=True,
+    budgets=None,
+    budget_penalty_weight=None,
 ):
     h, J, problem = assignment_qubo_from_edges(
         edges=edges,
@@ -295,18 +297,85 @@ def solve_assignment_with_qaoa(
     qbits = len(h)
     NUM_LAYERS = int(num_layers)
 
+    # Build sparse agent/task lookup from x-variables only.
+    var_meta = problem["var_meta"]
+    agents = problem["agents"]
+    tasks = problem["tasks"]
+    x_vars_by_agent = defaultdict(list)
+    x_vars_by_task = defaultdict(list)
+    x_var_cost = {}
+    for var_idx, meta in enumerate(var_meta):
+        if meta.get("kind") != "x":
+            continue
+        agent = meta["agent"]
+        task = meta["task"]
+        cost = float(meta["cost"])
+        x_vars_by_agent[agent].append(var_idx)
+        x_vars_by_task[task].append(var_idx)
+        x_var_cost[var_idx] = cost
+
+    # assignmentprob.py constants: budget lambda 20, task lambda 15.
+    if budget_penalty_weight is None:
+        budget_penalty_weight = 20.0
+    task_penalty_weight = 15.0 if task_penalty is None else float(task_penalty)
+
+    # Normalize budgets into an agent->value mapping.
+    budget_by_agent = {}
+    if isinstance(budgets, dict):
+        for agent in agents:
+            if agent in budgets:
+                budget_by_agent[agent] = float(budgets[agent])
+    elif isinstance(budgets, (list, tuple)):
+        for i, agent in enumerate(agents):
+            if i < len(budgets):
+                budget_by_agent[agent] = float(budgets[i])
+
     def object_func(x: QArray[QBit, qbits]):
         obj = 0
-        for i in range(qbits):
-            obj = obj + (h[i] * x[i])
-        for i in range(qbits):
-            for j in range(i + 1, qbits):
-                if J[i][j] != 0:
-                    obj = obj + (J[i][j] * x[i] * x[j])
-        return obj
+        budget_penalty = 0
+        task_only_once_penalty = 0
+
+        # Objective and optional budget penalties (assignmentprob style).
+        for agent in agents:
+            agent_cost = 0
+            for var_idx in x_vars_by_agent.get(agent, []):
+                agent_cost = agent_cost + (x_var_cost[var_idx] * x[var_idx])
+            obj = obj + agent_cost
+            if agent in budget_by_agent:
+                budget_penalty = budget_penalty + (agent_cost - budget_by_agent[agent]) ** 2
+
+        # Every task should be selected exactly once.
+        for task in tasks:
+            task_sum = 0
+            for var_idx in x_vars_by_task.get(task, []):
+                task_sum = task_sum + x[var_idx]
+            task_only_once_penalty = task_only_once_penalty + (task_sum - 1) ** 2
+
+        return obj + (budget_penalty_weight * budget_penalty) + (task_penalty_weight * task_only_once_penalty)
 
     def cost(x: QArray[QBit, qbits]):
         return object_func(x)
+
+    def classical_assignmentprob_cost(bitlist):
+        obj = 0.0
+        budget_penalty = 0.0
+        task_only_once_penalty = 0.0
+
+        for agent in agents:
+            agent_cost = 0.0
+            for var_idx in x_vars_by_agent.get(agent, []):
+                agent_cost += x_var_cost[var_idx] * float(bitlist[var_idx])
+            obj += agent_cost
+            if agent in budget_by_agent:
+                budget_penalty += (agent_cost - budget_by_agent[agent]) ** 2
+
+        for task in tasks:
+            task_sum = 0.0
+            for var_idx in x_vars_by_task.get(task, []):
+                task_sum += float(bitlist[var_idx])
+            task_only_once_penalty += (task_sum - 1.0) ** 2
+
+        return float(obj + (budget_penalty_weight * budget_penalty) + (task_penalty_weight * task_only_once_penalty))
 
     @qfunc
     def initial_state(x: QArray[QBit, qbits]):
@@ -365,7 +434,7 @@ def solve_assignment_with_qaoa(
 
     def evaluate_params(es, params):
         est = es.estimate_cost(
-            cost_func=lambda state: classical_qubo_value(state["x"], h, J),
+            cost_func=lambda state: classical_assignmentprob_cost(state["x"]),
             parameters={"params": params.tolist()},
         )
         cost_trace.append(est)
@@ -406,13 +475,13 @@ def solve_assignment_with_qaoa(
     sampled_solutions = []
     for sampled in sample_res.parsed_counts:
         bitstring = list(sampled.state["x"])
-        qubo_cost = classical_qubo_value(bitstring, h, J)
+        objective_cost = classical_assignmentprob_cost(bitstring)
         decoded = decode_assignment_solution(bitstring, problem)
         sampled_solutions.append(
             {
                 "bitstring": bitstring,
                 "probability": sampled.shots / num_shots,
-                "qubo_cost": qubo_cost,
+                "qubo_cost": objective_cost,
                 "decoded": decoded,
             }
         )

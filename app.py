@@ -24,29 +24,40 @@ def init_user_state():
 
 def parse_edges_text(edges_text):
     edges = []
+    budgets = {}
     for line_number, raw_line in enumerate(edges_text.splitlines(), start=1):
         line = raw_line.strip()
         if not line or line.startswith('#'):
             continue
 
         tokens = line.split()
-        if len(tokens) != 3:
-            raise ValueError(f"Line {line_number}: expected exactly 3 values (from to weight).")
+        if len(tokens) < 3:
+            raise ValueError(f"Line {line_number}: expected at least 3 values (from to weight).")
 
         try:
             weight = float(tokens[2])
         except ValueError as exc:
             raise ValueError(f"Line {line_number}: weight must be numeric.") from exc
 
-        edges.append({
+        edge = {
             'from': tokens[0],
             'to': tokens[1],
             'weight': weight,
-        })
+        }
+
+        # Optional budget for the 'from' node (agent)
+        if len(tokens) >= 4:
+            try:
+                budget = float(tokens[3])
+                budgets[tokens[0]] = budget
+            except ValueError:
+                pass
+
+        edges.append(edge)
 
     if not edges:
         raise ValueError('No valid edges found in input.')
-    return edges
+    return edges, budgets
 
 
 @app.route('/', methods=["GET"])
@@ -92,16 +103,16 @@ def process_edges():
     edges_text = payload.get('edges_text', '')
 
     try:
-        parsed_edges = parse_edges_text(edges_text)
+        parsed_edges, budgets = parse_edges_text(edges_text)
         weighted_edges = fixedges(parsed_edges)
-        result = calldotheshit(weighted_edges)
+        result = calldotheshit(weighted_edges, budgets)
     except ValueError as exc:
         return jsonify({'ok': False, 'error': str(exc)}), 400
 
     return jsonify({'ok': True, 'result': result})
 
 
-def calldotheshit(fixededges):
+def calldotheshit(fixededges, budgets=None):
     capacities = {}
 
     for edge in fixededges:
@@ -124,6 +135,8 @@ def calldotheshit(fixededges):
         capacity_penalty=30.0,
         show_circuit=False,
         plot_trace=True,
+        budgets=budgets,
+        budget_penalty_weight=20.0,
     )
 
     return optimized_graph
