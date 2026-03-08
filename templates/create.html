@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8"/>
+    <title>Create Graph</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="{{ url_for('static', filename='js/vendor/modernizr.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/jquery.js') }}"></script>
@@ -36,12 +37,14 @@
         <div class="row flex-1 flex flex-col">
             <div class="large-6 meduim-6 small-6 columns flex-1 flex flex-col">
                 <h2 class="text-center text-gray-500 text-lg italic mb-4">Input</h2>
+                <label for="data_area" class="sr-only">Graph input edges</label>
                 <!-- form grows to fill available vertical space; textarea will occupy remaining space -->
                 <form class="flex flex-col flex-1">
 
                     <div class="row flex-1">
                         <div class="large-12 columns h-full flex flex-col">
                             <textarea id="data_area"
+                                      aria-label="Graph input edges"
                                       class="peer flex-1 h-full min-h-[100px] w-full resize-none rounded-[7px] border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:border-t-transparent focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                       placeholder="Required format per line:&#10from_node to_node weight&#10A B 2.5&#10B C 7"
                                       rows="12"></textarea>
@@ -70,8 +73,12 @@
     <div class="bg-white rounded-3xl shadow-2xl w-full md:flex-1 md:max-w-none p-12 flex flex-col">
         <div class="flex-1 flex flex-col gap-4">
             <h2 class="text-center text-gray-500 text-lg italic">Output</h2>
-            <img id="output" alt="Nothing to show"></img>
+            <img id="output" src="" alt="Nothing to show" />
             <h3 class="text-sm font-semibold text-slate-700">Python Output</h3>
+            <img id="python_output_graph"
+                 src=""
+                 class="hidden w-full rounded-lg border border-slate-200 bg-white"
+                 alt="Optimized graph output" />
             <pre id="python_output"
                  class="flex-1 min-h-[180px] overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-slate-700 whitespace-pre-wrap">Click Draw to run server-side Python and display its output.</pre>
         </div>

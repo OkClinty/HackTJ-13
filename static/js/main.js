@@ -6,6 +6,10 @@ var get_python_output_area = function () {
     return $("#python_output");
 }
 
+var get_python_output_graph = function () {
+    return $("#python_output_graph");
+}
+
 /* More about syntax: http://www.graphviz.org/doc/info/lang.html */
 var parse = function () {
     var description = get_data_area().val();
@@ -48,7 +52,7 @@ var render_service = "https://draw.khairulin.com/";
 var previous_graph = "";
 
 var chart_url = function (graph) {
-    return render_service + "chart?cht=gv&chl=" + graph;
+    return render_service + "chart?cht=gv&chl=" + encodeURIComponent(graph);
 }
 
 var clear_error = function () {
@@ -81,9 +85,58 @@ var set_python_output = function (message, isError) {
     }
 }
 
+var set_python_output_graph = function (graphDot) {
+    var graphImage = get_python_output_graph();
+    if (!graphDot) {
+        graphImage.addClass("hidden");
+        graphImage.attr("src", "");
+        return;
+    }
+    graphImage.attr("src", chart_url(graphDot));
+    graphImage.removeClass("hidden");
+}
+
+var optimized_result_to_dot = function (result) {
+    if (!result || !Array.isArray(result.edges) || result.edges.length === 0)
+        return "";
+
+    var dotEdges = [];
+    for (var i = 0; i < result.edges.length; i++) {
+        var edge = result.edges[i];
+        if (!edge || !edge.source || !edge.target)
+            continue;
+
+        var style = edge.selected ? "color=\"#16a34a\",penwidth=3" : "color=\"#94a3b8\",style=\"dashed\"";
+        var label = "label=\"" + edge.weight + "\"";
+        dotEdges.push("\"" + edge.source + "\"->\"" + edge.target + "\"[" + label + "," + style + "]");
+    }
+
+    if (dotEdges.length === 0)
+        return "";
+
+    return "digraph{rankdir=LR;" + dotEdges.join(";") + "}";
+}
+
+var summary_from_result = function (result) {
+    var summary = (result && result.summary) ? result.summary : {};
+    var cost = (typeof summary.assignment_cost === "number") ? summary.assignment_cost : null;
+    var feasible = !!summary.feasible;
+    var assignment = summary.assignment_map ? JSON.stringify(summary.assignment_map, null, 2) : "{}";
+    var lines = [
+        "Optimization complete",
+        "Feasible: " + feasible
+    ];
+    if (cost !== null) {
+        lines.push("Assignment cost: " + cost);
+    }
+    lines.push("Assignment map:\n" + assignment);
+    return lines.join("\n");
+}
+
 var execute_python = async function (edgesText) {
     try {
         set_python_output("Running Python...", false);
+        set_python_output_graph("");
         var response = await fetch("/api/process-edges", {
             method: "POST",
             headers: {
@@ -95,12 +148,16 @@ var execute_python = async function (edgesText) {
         var payload = await response.json();
         if (!response.ok || !payload.ok) {
             var message = (payload && payload.error) ? payload.error : "Python processing failed.";
+            set_python_output_graph("");
             set_python_output(message, true);
             return;
         }
 
-        set_python_output(JSON.stringify(payload.result, null, 2), false);
+        var optimizedDot = optimized_result_to_dot(payload.result);
+        set_python_output_graph(optimizedDot);
+        set_python_output(summary_from_result(payload.result), false);
     } catch (error) {
+        set_python_output_graph("");
         set_python_output("Unable to reach the Python endpoint.", true);
     }
 }
@@ -114,6 +171,7 @@ var show = async function () {
         render_chart(graph);
     else {
         report_error("unable to parse data (use: from to weight)");
+        set_python_output_graph("");
         set_python_output("Fix the input format, then click Draw again.", true);
         return;
     }
