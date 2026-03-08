@@ -20,9 +20,6 @@
             <li class="border-r border-slate-700"><a href="/create"
                                                      class="block text-white px-8 py-4 bg-purple-600 hover:bg-purple-700 transition-colors font-semibold">Create</a>
             </li>
-            <li class="border-r border-slate-700"><a href="/simulate"
-                                                     class="block text-white px-8 py-4 hover:bg-slate-800 transition-colors">Simulate</a>
-            </li>
             <li class="border-r border-slate-700"><a href="/about"
                                                      class="block text-white px-8 py-4 hover:bg-slate-800 transition-colors">About</a>
             </li>
@@ -46,9 +43,10 @@
                         <div class="large-12 columns h-full flex flex-col">
                             <textarea id="data_area"
                                       class="peer flex-1 h-full min-h-[100px] w-full resize-none rounded-[7px] border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:border-t-transparent focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                      placeholder="Input the graph in the following format:&#10edge1 edge2&#10edge3 edge4 "
+                                      placeholder="Required format per line:&#10from_node to_node weight&#10A B 2.5&#10B C 7"
                                       rows="12"></textarea>
                             <small id="error_message"></small>
+                            <p class="mt-2 text-xs text-slate-500">Each edge must include a numeric weight as the 3rd value.</p>
                         </div>
                     </div>
                     <!-- buttons stay in a non-growing footer area so they sit at the bottom -->

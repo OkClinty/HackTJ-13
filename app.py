@@ -7,17 +7,20 @@ from dotheshit import solve_assignment_with_qaoa
 app = Flask(__name__)
 app.secret_key = 'dtfyghubjn2345678dfgh'
 
+
 def create_or_retrieve():
     if 'user_state' not in session:
         init_user_state()
     return session['user_state']
+
 
 def init_user_state():
     session['user_state'] = {
         'login': False,
         'user': ''
     }
-    session.modified = True  
+    session.modified = True
+
 
 def parse_edges_text(edges_text):
     edges = []
@@ -25,23 +28,28 @@ def parse_edges_text(edges_text):
         line = raw_line.strip()
         if not line or line.startswith('#'):
             continue
+
         tokens = line.split()
-        if len(tokens) < 2:
-            raise ValueError(f"Line {line_number}: expected at least 2 values (from to [weight]).")
-        edge = {
+        if len(tokens) != 3:
+            raise ValueError(f"Line {line_number}: expected exactly 3 values (from to weight).")
+
+        try:
+            weight = float(tokens[2])
+        except ValueError as exc:
+            raise ValueError(f"Line {line_number}: weight must be numeric.") from exc
+
+        edges.append({
             'from': tokens[0],
             'to': tokens[1],
-        }
-        if len(tokens) > 2:
-            edge['weight'] = tokens[2]
-        edges.append(edge)
+            'weight': weight,
+        })
 
     if not edges:
         raise ValueError('No valid edges found in input.')
     return edges
 
 
-@app.route('/', methods = ["GET"])
+@app.route('/', methods=["GET"])
 def default_page():
     facts = [False, False, False]
     stuff = ["success", "logout", "auth_error"]
@@ -51,13 +59,14 @@ def default_page():
             facts[i] = True
     return render_template('index.html', facts=facts)
 
-@app.route('/login', methods = ["POST"])
+
+@app.route('/login', methods=["POST"])
 def login():
     user_state = create_or_retrieve()
     uname = request.form.get("uname")
     pword = request.form.get("pword")
     pword += "saltyspitoon"
-    b_pword  = pword.encode('utf-8')
+    b_pword = pword.encode('utf-8')
     sha_obj = hashlib.sha256()
     sha_obj.update(b_pword)
     hashed_val = sha_obj.hexdigest()
@@ -72,6 +81,7 @@ def login():
     else:
         return redirect('/?success=false')
 
+
 @app.route('/api/process-edges', methods=["POST"])
 def process_edges():
     user_state = create_or_retrieve()
@@ -82,17 +92,17 @@ def process_edges():
     edges_text = payload.get('edges_text', '')
 
     try:
-        edges = parse_edges_text(edges_text)
-        fixed = fixedges(edges)
-        result = fixed
+        parsed_edges = parse_edges_text(edges_text)
+        weighted_edges = fixedges(parsed_edges)
+        result = calldotheshit(weighted_edges)
     except ValueError as exc:
         return jsonify({'ok': False, 'error': str(exc)}), 400
 
-    return jsonify({'ok': True, 'result': fixed})
+    return jsonify({'ok': True, 'result': result})
+
 
 def calldotheshit(fixededges):
-    capacities = {
-    }
+    capacities = {}
 
     for edge in fixededges:
         node1 = edge[0]
@@ -104,7 +114,7 @@ def calldotheshit(fixededges):
         capacities[node1] += 1
         capacities[node2] += 1
 
-    result = solve_assignment_with_qaoa(
+    optimized_graph = solve_assignment_with_qaoa(
         edges=fixededges,
         capacities=capacities,
         num_layers=3,
@@ -116,14 +126,15 @@ def calldotheshit(fixededges):
         plot_trace=True,
     )
 
-    return jsonify({'ok': True, 'result': result})
+    return optimized_graph
+
 
 def fixedges(edges):
     fixed = []
     for edge in edges:
         node1 = edge['from']
         node2 = edge['to']
-        weight = float(edge.get('weight', 1.0))
+        weight = float(edge['weight'])
         fixed.append((node1, node2, weight))
     return fixed
 
@@ -133,6 +144,7 @@ def logout():
     session.clear()
     return redirect('/?logout=true')
 
+
 @app.route('/home')
 def home():
     user_state = create_or_retrieve()
@@ -140,6 +152,7 @@ def home():
         return render_template('home.html')
     else:
         return redirect('/?auth_error=true')
+
 
 @app.route('/create')
 def create():
@@ -149,6 +162,7 @@ def create():
     else:
         return redirect('/?auth_error=true')
 
+
 @app.route('/simulate')
 def simulate():
     user_state = create_or_retrieve()
@@ -157,6 +171,7 @@ def simulate():
     else:
         return redirect('/?auth_error=true')
 
+
 @app.route('/about')
 def about():
     user_state = create_or_retrieve()
@@ -164,6 +179,8 @@ def about():
         return render_template('about.html')
     else:
         return redirect('/?auth_error=true')
-    
+
+
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=80, debug=True)
+

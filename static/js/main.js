@@ -17,7 +17,7 @@ var parse = function () {
     var directed = $("#graph_type").val() === "digraph";
     var sep = directed ? "->" : "--";
     var ignore_the_first_line = $("#first_line_checkbox").is(":checked");
-    var use_labels = $("#use_labels_checkbox").is(":checked");
+
     for (var i in lines) {
         if (ignore_the_first_line) {
             ignore_the_first_line = false;
@@ -28,13 +28,16 @@ var parse = function () {
             continue;
         }
         var elems = line.split(/\s+/);
-        if (elems.length < 2)
+        if (elems.length !== 3)
             return undefined;
+
         var from = elems[0];
         var to = elems[1];
-        var edge = from + sep + to;
-        if (use_labels && elems.length > 2)
-            edge += "[label=\"" + elems[2] + "\"]";
+        var weight = Number(elems[2]);
+        if (Number.isNaN(weight))
+            return undefined;
+
+        var edge = from + sep + to + "[label=\"" + elems[2] + "\"]";
         result.push(edge);
     }
     return (directed ? "digraph" : "graph") + "{" + result.join(";") + "}";
@@ -110,7 +113,7 @@ var show = async function () {
     if (graph)
         render_chart(graph);
     else {
-        report_error("unable to parse data");
+        report_error("unable to parse data (use: from to weight)");
         set_python_output("Fix the input format, then click Draw again.", true);
         return;
     }
@@ -160,19 +163,23 @@ var handle_query = function () {
             var sep = e.indexOf(separator);
             if (sep < 1)
                 continue;
-            var line = e.substr(0, sep);
-            var brace = e.indexOf("[", sep + 3);
+
+            var from = e.substr(0, sep).trim();
+            var brace = e.indexOf("[", sep + 2);
+            var to = "";
+            var weight = "";
+
             if (brace < 0) {
-                line += " " + e.substr(sep + 2);
-                lines.push(line);
                 continue;
             }
-            line += " " + e.substr(sep + 2, brace - sep - 2);
-            if (e.substr(e.length - 2) === "\"]"
-                && e.substr(brace + 1, 6) !== "label=\"") {
-                line += " " + e.substr(brace + 8, e.length - brace - 10)
+
+            to = e.substr(sep + 2, brace - sep - 2).trim();
+            var labelMatch = e.match(/label="([^"]+)"/);
+            if (!labelMatch || labelMatch.length < 2) {
+                continue;
             }
-            lines.push(line);
+            weight = labelMatch[1].trim();
+            lines.push(from + " " + to + " " + weight);
         }
         if (lines.length > 0) {
             get_data_area().val(lines.join("\n"));

@@ -225,6 +225,55 @@ def decode_assignment_solution(bitlist, problem):
     }
 
 
+def build_optimized_assignment_graph(problem, edges, best_solution):
+    decoded = best_solution["decoded"]
+    selected_pairs = {(a, t) for (a, t, _w) in decoded.get("selected_edges", [])}
+
+    nodes = []
+    for agent in problem["agents"]:
+        nodes.append(
+            {
+                "id": str(agent),
+                "type": "agent",
+                "capacity": int(problem["capacities"][agent]),
+                "assigned": int(decoded.get("load_by_agent", {}).get(agent, 0)),
+            }
+        )
+
+    for task in problem["tasks"]:
+        nodes.append(
+            {
+                "id": str(task),
+                "type": "task",
+                "assigned_to": decoded.get("assignment_map", {}).get(task),
+            }
+        )
+
+    graph_edges = []
+    for agent, task, weight in edges:
+        graph_edges.append(
+            {
+                "source": str(agent),
+                "target": str(task),
+                "weight": float(weight),
+                "selected": (agent, task) in selected_pairs,
+            }
+        )
+
+    return {
+        "nodes": nodes,
+        "edges": graph_edges,
+        "summary": {
+            "feasible": bool(decoded.get("feasible", False)),
+            "assignment_cost": float(decoded.get("assignment_cost", 0.0)),
+            "qubo_cost": float(best_solution.get("qubo_cost", 0.0)),
+            "probability": float(best_solution.get("probability", 0.0)),
+            "assignment_map": decoded.get("assignment_map", {}),
+            "load_by_agent": decoded.get("load_by_agent", {}),
+        },
+    }
+
+
 def solve_assignment_with_qaoa(
     edges,
     capacities,
@@ -401,17 +450,12 @@ def solve_assignment_with_qaoa(
     print(f"  load_by_agent   = {best_solution['decoded']['load_by_agent']}")
     print(f"  slack_by_agent  = {best_solution['decoded']['slack_by_agent']}")
 
-    return {
-        "optimizer_result": result,
-        "final_params": final_params,
-        "cost_trace": cost_trace,
-        "sampled_solutions": sampled_solutions,
-        "best_solution": best_solution,
-        "qubo_h": h,
-        "qubo_J": J,
-        "problem": problem,
-        "qprog": qprog,
+    optimized_graph = build_optimized_assignment_graph(problem, edges, best_solution)
+    optimized_graph["optimization"] = {
+        "final_params": [float(x) for x in final_params],
+        "cost_trace": [float(x) for x in cost_trace],
     }
+    return optimized_graph
 
 
 if __name__ == "__main__":
@@ -484,3 +528,4 @@ if __name__ == "__main__":
         show_circuit=False,
         plot_trace=True,
     )
+
